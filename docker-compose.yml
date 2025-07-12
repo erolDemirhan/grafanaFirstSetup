@@ -1,0 +1,41 @@
+version: '3.9'
+services:
+
+  dotnet-service:
+    build: ./dotnet-service
+    ports:
+      - "5001:80"
+
+  python-service:
+    build: ./python-service
+    ports:
+      - "8000:8000"
+
+  gateway:
+    container_name: gateway
+    build: ./gateway
+    ports:
+      - "8085:80"
+    depends_on:
+      - dotnet-service
+      - python-service
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=inferno14.5*D    
+    volumes:
+      - grafana-storage:/var/lib/grafana      
